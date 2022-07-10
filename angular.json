@@ -101,11 +101,14 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+            ]
           }
         }
       }
     }
   },
-  "defaultProject": "carui"
+  "cli": {
+    "analytics": false
+  }
 }
