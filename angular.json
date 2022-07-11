@@ -33,7 +33,10 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "src/assets/speedometer.js",
+              "src/assets/fraction.min.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -102,6 +105,8 @@
               "src/styles.scss"
             ],
             "scripts": [
+              "src/assets/speedometer.js",
+              "src/assets/fraction.min.js"
             ]
           }
         }
