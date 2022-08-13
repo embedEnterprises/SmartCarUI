@@ -1,14 +1,18 @@
 var ctx;
 var canvas = {
-  width:425,
-  height:225
+  width:325,
+  height:125,
+  w : 50,
+  h : 50,
+  x : 27,
+  y : 35
 };
 offsetXVal = 500;
 offsetYVal = 350;
+iconSize = 17.5;
+iconSizeP = 2;
 
-function init(ct){
-  ctx = ct;
-}
+
 /**3
  * Converts angle in degrees to radians.
  * @param {number} deg Angle in degrees.
@@ -884,7 +888,7 @@ function drawHello(speedometerValue, tachometerValue, gasValue, mileage, turnSig
     mCircle.drawIcon('stab', iconStates['stab']);
     mCircle.drawIcon('abs', iconStates['abs']);
 
-    mCircle.drawMileage(mileage, 0, 60, 100, 20, 2);
+    mCircle.drawMileage(mileage, 0, mileagePos, (100/1260)*canvas.width/100 , (20/560)*canvas.height/100, 2);
 
     mCircle.drawUnit(-25);
 
@@ -897,34 +901,36 @@ function drawHello(speedometerValue, tachometerValue, gasValue, mileage, turnSig
     mCircle.drawArrowBody();
 }
 
-const icons = {
+var icons = {
     // main circle
-    'dippedBeam': new Icon(-22.5, 47.5, 10, 150 * 0 + 10 * 1, 17.5, 17.5, 2),
-    'brake':      new Icon(-80, 47.5, 10, 150 * 1 + 10 * 2, 17.5, 17.5, 2),
-    'drift':      new Icon(0, 47.5, 10, 150 * 2 + 10 * 3, 17.5, 17.5, 2),
-    'highBeam':   new Icon(-45, 47.5, 10, 150 * 4 + 10 * 5, 17.5, 17.5, 2),
-    'lock':       new Icon(80, 47.5, 10, 150 * 6 + 10 * 7, 17.5, 17.5, 2),
-    'seatBelt':   new Icon(45, 47.5, 10, 150 * 8 + 10 * 9, 17.5, 17.5, 2),
-    'engineTemp': new Icon(62.5, 70, 10, 150 * 10 + 10 * 11, 17.5, 17.5, 3),
-    'stab':       new Icon(22.5, 47.5, 10, 150 * 12 + 10 * 13, 17.5, 17.5, 2),
-    'abs':        new Icon(-62.5, 70, 10, 150 * 14 + 10 * 15, 17.5, 17.5, 2),
+    'dippedBeam': new Icon(-22.5, 47.5, 10, 150 * 0 + 10 * 1, iconSize, iconSize, 2),
+    'brake':      new Icon(-80, 47.5, 10, 150 * 1 + 10 * 2, iconSize, iconSize, 2),
+    'drift':      new Icon(0, 47.5, 10, 150 * 2 + 10 * 3, iconSize, iconSize, 2),
+    'highBeam':   new Icon(-45, 47.5, 10, 150 * 4 + 10 * 5, iconSize, iconSize, 2),
+    'lock':       new Icon(80, 47.5, 10, 150 * 6 + 10 * 7, iconSize, iconSize, 2),
+    'seatBelt':   new Icon(45, 47.5, 10, 150 * 8 + 10 * 9, iconSize, iconSize, 2),
+    'engineTemp': new Icon(62.5, 70, 10, 150 * 10 + 10 * 11, iconSize, iconSize, 3),
+    'stab':       new Icon(22.5, 47.5, 10, 150 * 12 + 10 * 13, iconSize, iconSize, 2),
+    'abs':        new Icon(-62.5, 70, 10, 150 * 14 + 10 * 15, iconSize, iconSize, 2),
     // right circle
-    'gas':        new Icon(5, 55, 10, 150 * 3 + 10 * 4, 17.5, 17.5, 3),
-    'trunk':      new Icon(22.5, 25, 10, 150 * 7 + 10 * 8, 17.5, 17.5, 2),
-    'bonnet':     new Icon(-5, 25, 10, 150 * 11 + 10 * 12, 17.5, 17.5, 2),
-    'doors':      new Icon(-17.5, 47.5, 10, 150 * 15 + 10 * 16, 17.5, 17.5, 2),
+    'gas':        new Icon(5, 55, 10, 150 * 3 + 10 * 4, iconSize, iconSize, 3),
+    'trunk':      new Icon(22.5, 25, 10, 150 * 7 + 10 * 8, iconSize, iconSize, 2),
+    'bonnet':     new Icon(-5, 25, 10, 150 * 11 + 10 * 12, iconSize, iconSize, 2),
+    'doors':      new Icon(-17.5, 47.5, 10, 150 * 15 + 10 * 16, iconSize, iconSize, 2),
     // left circle
-    'battery':    new Icon(17.5, 50, 10, 150 * 5 + 10 * 6, 17.5, 17.5, 3),
-    'oil':        new Icon(5, 32.5, 10, 150 * 9 + 10 * 10, 17.5, 17.5, 3),
-    'engineFail': new Icon(-10, 50, 10, 150 * 13 + 10 * 14, 17.5, 17.5, 3)
+    'battery':    new Icon(17.5, 50, 10, 150 * 5 + 10 * 6, iconSize, iconSize, 3),
+    'oil':        new Icon(5, 32.5, 10, 150 * 9 + 10 * 10,iconSize, iconSize, 3),
+    'engineFail': new Icon(-10, 50, 10, 150 * 13 + 10 * 14, iconSize, iconSize, 3)
 }
 
-const turnSignals = {
+var turnSignals = {
     'left':  new TurnSignal(-17.5, -40, 20, 15),
     'right': new TurnSignal(17.5, -40, 20, 15)
 }
 
-const options = {
+var mileageP = 10.7;
+var mileagePos = 60;
+var options = {
     'circleBorderWidth': 4,
     'circleBorderColor': '#8b8b8b',
     'circleFillColor': '#000000',
@@ -947,3 +953,48 @@ const options = {
     'turnSignal': turnSignals
 }
 
+function resizeSpeedometer(ct ,w , h){
+  ctx = ct;
+  canvas.width = w*canvas.w /100;
+  canvas.height = h*canvas.h/100;
+  offsetXVal = canvas.x * w /100;
+  offsetYVal = canvas.y * h /100;
+  iconSize = iconSizeP * w / 100;
+  var wq = w/100;
+  var hq = h/100;
+  icons = {
+    // main circle
+    'dippedBeam': new Icon(-1.81*wq, 8.46*hq, 10, 150 * 0 + 10 * 1, iconSize, iconSize, 2),
+    'brake':      new Icon(-6.45*wq, 8.46*hq, 10, 150 * 1 + 10 * 2, iconSize, iconSize, 2),
+    'drift':      new Icon(0, 8.46*hq, 1.78*hq, 150 * 2 + 10 * 3, iconSize, iconSize, 2),
+    'highBeam':   new Icon(-3.6*wq, 8.46*hq, 10, 150 * 4 + 10 * 5, iconSize, iconSize, 2),
+    'lock':       new Icon(6.45*wq, 8.46*hq, 10, 150 * 6 + 10 * 7, iconSize, iconSize, 2),
+    'seatBelt':   new Icon(3.6*wq, 8.46*hq, 10, 150 * 8 + 10 * 9, iconSize, iconSize, 2),
+    'engineTemp': new Icon(5.04*wq, 12.47*hq, 10, 150 * 10 + 10 * 11, iconSize, iconSize, 3),
+    'stab':       new Icon(1.81*wq, 8.46*hq, 10, 150 * 12 + 10 * 13, iconSize, iconSize, 2),
+    'abs':        new Icon(-5.04*wq, 5.64*hq, 10, 150 * 14 + 10 * 15, iconSize, iconSize, 2),
+    // right circle
+    'gas':        new Icon(0.4*wq, 9.8*hq, 10, 150 * 3 + 10 * 4, iconSize, iconSize, 3),
+    'trunk':      new Icon(1.81*wq, 4.46*hq, 10, 150 * 7 + 10 * 8, iconSize, iconSize, 2),
+    'bonnet':     new Icon(-0.4*wq, 4.46*hq, 10, 150 * 11 + 10 * 12, iconSize, iconSize, 2),
+    'doors':      new Icon(-1.4*wq, 8.48*hq, 10, 150 * 15 + 10 * 16, iconSize, iconSize, 2),
+    // left circle
+    'battery':    new Icon(1.4*wq, 8.92*hq, 10, 150 * 5 + 10 * 6, iconSize, iconSize, 3),
+    'oil':        new Icon(0.4*wq, 5.8*hq, 10, 150 * 9 + 10 * 10,iconSize, iconSize, 3),
+    'engineFail': new Icon(-0.8*wq, 8.92*hq, 10, 150 * 13 + 10 * 14, iconSize, iconSize, 3)
+}
+
+ turnSignals = {
+  'left':  new TurnSignal(-1.4*wq, -7.14*hq, iconSize, iconSize),
+  'right': new TurnSignal(1.4*wq, -7.14*hq, iconSize, iconSize)
+}
+
+options.icons = icons;
+options.turnSignal = turnSignals;
+options.markFontSize = 1.4*wq;
+mileagePos = mileageP * hq;
+// if (mCircle != undefined) {
+//   mCircle.icons = icons;
+// }
+
+}

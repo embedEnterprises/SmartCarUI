@@ -1,15 +1,17 @@
 import { RouterModule } from '@angular/router';
 import { Pedal } from './Pedal';
-import { Renderer2 } from '@angular/core';
+import { Renderer2, NgZone } from '@angular/core';
 import { Steering } from './steering';
+import { DeviceConfigurationService } from './../device-configuration.service';
 
 declare function drawHello(speedometerValue, tachometerValue, gasValue, mileage, turnSignals, iconStates);
-declare function init(ct);
+declare function resizeSpeedometer(ct, w, h);
 
 export class Dashboard{
 
   private steer;
   private pedals;
+  public resizeSpeedometer = resizeSpeedometer;
   public turn= {
     left : false,
     right : false
@@ -40,16 +42,24 @@ export class Dashboard{
 
   }
 
-  constructor(private ctx: CanvasRenderingContext2D, private renderer2:Renderer2){
-    this.steer = new Steering(ctx,renderer2);
-    this.pedals = new Pedal(ctx, renderer2);
-    init(this.ctx);
+  constructor(private ctx: CanvasRenderingContext2D,
+    private renderer2:Renderer2,
+    private deviceConf : DeviceConfigurationService,
+    private ngZone:NgZone){
+    this.steer = new Steering(ctx,renderer2,deviceConf, ngZone);
+    this.pedals = new Pedal(ctx, renderer2,deviceConf);
+    this.steer.calculatePos(this.ctx.canvas.width, this.ctx.canvas.height);
+    resizeSpeedometer(this.ctx, this.ctx.canvas.width , this.ctx.canvas.height);
     this.speed = 0;
   }
 
-  public isClicked(x , y){
-    this.steer.isClicked(x, y);
-    this.pedals.isClicked(x , y);
+  public calculatePos(x, y){
+    this.steer.calculatePos(x,y);
+    this.pedals.calculatePos(x,y);
+  }
+  public isClicked(e){
+    this.steer.isClicked(e);
+    this.pedals.isClicked(e);
   }
 
   public update(){
