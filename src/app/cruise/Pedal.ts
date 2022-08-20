@@ -3,7 +3,7 @@ import { DeviceConfigurationService } from './../device-configuration.service';
 
 export class Pedal {
   private img;
-  private break = {
+  public break = {
     x: 5,
     y: 60,
     w: 10,
@@ -17,7 +17,7 @@ export class Pedal {
     pointerId: undefined,
   };
 
-  private gas = {
+  public gas = {
     x: 17,
     y: 60,
     w: 10,

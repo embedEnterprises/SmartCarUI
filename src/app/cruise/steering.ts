@@ -22,15 +22,13 @@ export class Steering {
     private ctx: CanvasRenderingContext2D,
     private renderer2: Renderer2,
     private deviceConf: DeviceConfigurationService,
-    private ngZone : NgZone
+    private ngZone: NgZone
   ) {
     this.img = new Image();
     this.img.src =
       'https://upload.wikimedia.org/wikipedia/commons/7/7b/Steering-wheel.svg';
     // 'assets/steer.svg';
     this.path = new Path2D();
-
-
   }
 
   public calculatePos(w, h) {
@@ -85,7 +83,6 @@ export class Steering {
       eventEnd = 'touchend';
 
       if (this.ctx.isPointInPath(this.path, x, y)) {
-        console.log("point in path");
         this.pointerId = e.pointerId;
 
         clearInterval(this.intervalId);
@@ -96,9 +93,8 @@ export class Steering {
           this.ctx.canvas,
           'pointermove',
           (event) => {
-            console.log("move");
             event.preventDefault();
-            if(this.pointerId == event.pointerId){
+            if (this.pointerId == event.pointerId) {
               x = event.clientX;
               y = event.clientY;
               rad = Math.atan2(y - this.posY, x - this.posX);
@@ -117,13 +113,12 @@ export class Steering {
           this.ctx.canvas,
           'pointerup',
           (event) => {
-           if(this.pointerId == event.pointerId){
-            console.log("up");
-            event.preventDefault();
-            this.resetSteering();
-            this.unListenMouseMove();
-            this.unListenMouseUp();
-           }
+            if (this.pointerId == event.pointerId) {
+              event.preventDefault();
+              this.resetSteering();
+              this.unListenMouseMove();
+              this.unListenMouseUp();
+            }
           }
         );
       }
@@ -136,13 +131,11 @@ export class Steering {
 
   private resetSteering() {
     if (this.rotation != 0) {
-      console.log("reset");
       this.ngZone.runOutsideAngular(() => {
-      this.intervalId = setInterval(() => {
-        console.log("resetpos");
-        this.resetPos();
-      }, 0.05);
-    })
+        this.intervalId = setInterval(() => {
+          this.resetPos();
+        }, 0.05);
+      });
     }
   }
 
@@ -154,7 +147,6 @@ export class Steering {
     } else {
       this.rotation = 0;
       if (this.intervalId != 0) {
-        console.log("inteval cleared");
         clearInterval(this.intervalId);
         this.intervalId = 0;
       }
