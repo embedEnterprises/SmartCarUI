@@ -5,6 +5,7 @@ import { Pedal } from './Pedal';
 import { Renderer2, NgZone } from '@angular/core';
 import { Steering } from './steering';
 import { DeviceConfigurationService } from './../device-configuration.service';
+import { WebsocketRxjsService } from '../websocket-rxjs.service';
 
 declare function drawHello(speedometerValue, tachometerValue, gasValue, mileage, turnSignals, iconStates);
 declare function resizeSpeedometer(ct, w, h);
@@ -17,6 +18,8 @@ export class Dashboard{
   public ledCase = 0;
   private ledCases : Array<{x:number , y:number}> = [];
   public indicator;
+  private intervalId;
+  private flag = true;
   public turn= {
     left : false,
     right : false
@@ -49,11 +52,12 @@ export class Dashboard{
   constructor(private ctx: CanvasRenderingContext2D,
     private renderer2:Renderer2,
     private deviceConf : DeviceConfigurationService,
-    private ngZone:NgZone
+    private ngZone:NgZone,
+    private wscService : WebsocketRxjsService
     ){
-    this.steer = new Steering(ctx,renderer2,deviceConf, ngZone);
-    this.pedals = new Pedal(ctx, renderer2,deviceConf);
-    this.indicator = new Indicators(ctx , renderer2 ,deviceConf, ngZone);
+    this.steer = new Steering(ctx,renderer2,deviceConf, ngZone , wscService);
+    this.pedals = new Pedal(ctx, renderer2,deviceConf ,wscService);
+    this.indicator = new Indicators(ctx , renderer2 ,deviceConf, ngZone,wscService);
     this.calculatePos(this.ctx.canvas.width, this.ctx.canvas.height);
     resizeSpeedometer(this.ctx, this.ctx.canvas.width , this.ctx.canvas.height);
     this.speed = 0;
@@ -72,7 +76,6 @@ export class Dashboard{
     var radius = ((ch / 2 +
     (ch / 2 - ch / 2 * Math.sin(this.deg2Rad(50))) / 2 -
     4))/2 + 20;
-    console.log(radius, ch , cw , gap);
     for(let i = 0; i<count; i++){
       var yl = y - Math.sin(this.deg2Rad(startDeg + i*gap)) * radius;
       var xl = x - Math.cos(this.deg2Rad(startDeg + i*gap)) * radius;
@@ -80,9 +83,6 @@ export class Dashboard{
       a.x = xl + 27 * cw /100;
       a.y = yl + 35 * ch/100;
       this.ledCases.push(a);
-      // console.log(xl,yl);
-      // this.renderer2.setStyle(.nativeElement , 'left' , xl);
-      // this.renderer2.setStyle(this.ledCases[i].nativeElement , 'top' , yl);
     }
 
   }
@@ -91,7 +91,6 @@ export class Dashboard{
     this.steer.calculatePos(x,y);
     this.pedals.calculatePos(x,y);
     this.indicator.calculatePos(x,y);
-    // this.placeLed();
   }
   public isClicked(e){
     this.steer.isClicked(e);
@@ -103,24 +102,40 @@ export class Dashboard{
     this.steer.update();
     this.pedals.update();
     this.indicator.update();
-    this.calculateSpeed();
+    // this.calculateSpeed();
+    if((this.pedals.break.pressed || this.pedals.gas.pressed) && this.flag){
+      this.updateSpeed();
+    }
     drawHello(this.speed/100, this.speed/100, 0.5, 100, this.turn, this.indicators);
   }
+
+  private updateSpeed(){
+    this.flag = false;
+    this.ngZone.runOutsideAngular(() => {
+      this.intervalId = setInterval(() => {
+        this.calculateSpeed();
+      }, 10);
+    });
+  }
+
 
   calculateSpeed(){
     if(this.pedals.break.pressed){
       if(this.speed > 0){
-        this.speed -= 0.5;
+        this.speed -= 2;
       }
     }
     else if (this.pedals.gas.pressed){
       if(this.speed < this.carConfig.topSpeed){
-        this.speed += 0.5;
+        this.speed += 2;
       }
     }
     else {
       if (this.speed > 0) {
-        this.speed -= 0.2;
+        this.speed -= 1;
+      }else {
+        this.flag = true;
+        clearInterval(this.intervalId);
       }
     }
 

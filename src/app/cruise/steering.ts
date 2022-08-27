@@ -1,4 +1,5 @@
 import { Renderer2, NgZone } from '@angular/core';
+import { WebsocketRxjsService } from '../websocket-rxjs.service';
 import { DeviceConfigurationService } from './../device-configuration.service';
 
 export class Steering {
@@ -16,13 +17,15 @@ export class Steering {
   private unListenMouseMove: () => void;
   private unListenMouseUp: () => void;
   private intervalId;
+  private intervalFlg;
   private pointerId;
 
   constructor(
     private ctx: CanvasRenderingContext2D,
     private renderer2: Renderer2,
     private deviceConf: DeviceConfigurationService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private wscService: WebsocketRxjsService
   ) {
     this.img = new Image();
     this.img.src =
@@ -84,8 +87,8 @@ export class Steering {
 
       if (this.ctx.isPointInPath(this.path, x, y)) {
         this.pointerId = e.pointerId;
-
-        clearInterval(this.intervalId);
+        // clearInterval(this.intervalId);
+        this.sendData();
         var prevRad = Math.atan2(y - this.posY, x - this.posX);
         var rad;
 
@@ -94,16 +97,21 @@ export class Steering {
           'pointermove',
           (event) => {
             event.preventDefault();
+            this.intervalFlg = false;
             if (this.pointerId == event.pointerId) {
               x = event.clientX;
               y = event.clientY;
               rad = Math.atan2(y - this.posY, x - this.posX);
-              if (prevRad < 0 && rad > 0) {
-                this.rotation -= Math.abs(Math.abs(rad) - Math.abs(prevRad));
-              } else if (prevRad > 0 && rad < 0) {
-                this.rotation += Math.abs(Math.abs(rad) - Math.abs(prevRad));
-              } else {
-                this.rotation += rad - prevRad;
+              console.log(rad);
+              if (Math.abs(this.rotation) < 1 * Math.PI) {
+                if (prevRad < 0 && rad > 0) {
+                  this.rotation -= Math.abs(Math.abs(rad) - Math.abs(prevRad));
+                } else if (prevRad > 0 && rad < 0) {
+                  this.rotation += Math.abs(Math.abs(rad) - Math.abs(prevRad));
+                } else {
+                  this.rotation += rad - prevRad;
+                }
+
               }
               prevRad = rad;
             }
@@ -115,7 +123,10 @@ export class Steering {
           (event) => {
             if (this.pointerId == event.pointerId) {
               event.preventDefault();
-              this.resetSteering();
+              clearInterval(this.intervalId);
+              this.wscService.send('s+');
+              // this.resetSteering();
+              this.intervalFlg = true;
               this.unListenMouseMove();
               this.unListenMouseUp();
             }
@@ -126,30 +137,32 @@ export class Steering {
   }
 
   public update() {
+    if(this.intervalFlg){
+      this.resetPos();
+    }
     this.draw();
   }
 
   private resetSteering() {
     if (this.rotation != 0) {
-      this.ngZone.runOutsideAngular(() => {
-        this.intervalId = setInterval(() => {
-          this.resetPos();
-        }, 0.05);
-      });
+      setTimeout(() => {
+        this.resetPos();
+        if(this.intervalFlg)
+        this.resetSteering();
+      }, 0.01);
     }
   }
 
   public resetPos() {
-    if (this.rotation > (3 * Math.PI) / 180) {
-      this.rotation -= (3 * Math.PI) / 180;
-    } else if (this.rotation < (-3 * Math.PI) / 180) {
-      this.rotation += (3 * Math.PI) / 180;
+    if (this.rotation > (7 * Math.PI) / 180) {
+      this.rotation -= (7 * Math.PI) / 180;
+      this.intervalId = true;
+    } else if (this.rotation < (-7 * Math.PI) / 180) {
+      this.rotation += (7 * Math.PI) / 180;
+      this.intervalId = true;
     } else {
       this.rotation = 0;
-      if (this.intervalId != 0) {
-        clearInterval(this.intervalId);
-        this.intervalId = 0;
-      }
+      this.intervalFlg = false;
     }
   }
 
@@ -176,5 +189,13 @@ export class Steering {
     this.ctx.strokeStyle = this.strokeStyle;
     this.ctx.lineWidth = this.lineWidth;
     // this.ctx.stroke(this.path);
+  }
+
+  private sendData() {
+    this.ngZone.runOutsideAngular(() => {
+      this.intervalId = setInterval(() => {
+        this.wscService.send('s' + (this.rotation * 180) / Math.PI);
+      }, 10);
+    });
   }
 }

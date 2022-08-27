@@ -8,7 +8,7 @@ import { webSocket } from 'rxjs/webSocket';
 export class WebsocketRxjsService {
   private socket;
   private connected;
-  private url = 'ws://192.168.3.106:80/ws';
+  private url = 'ws://192.168.0.105:80/ws';
   private retryConfig : RetryConfig = {
     count : 10,
     delay : 50

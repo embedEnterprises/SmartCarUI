@@ -1,4 +1,5 @@
 import { NgZone, Renderer2 } from '@angular/core';
+import { WebsocketRxjsService } from '../websocket-rxjs.service';
 import { DeviceConfigurationService } from './../device-configuration.service';
 
 export class Indicators {
@@ -44,7 +45,8 @@ export class Indicators {
     private ctx: CanvasRenderingContext2D,
     private renderer2: Renderer2,
     private deviceConf: DeviceConfigurationService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private wscService : WebsocketRxjsService
   ) {
     this.img = new Image();
     this.img.src =

@@ -11,7 +11,7 @@ export interface Message {
 @Injectable()
 export class SocketService {
   public messages: Subject<Message>;
-  public CHAT_URL = 'ws://192.168.3.106:80/ws';
+  public CHAT_URL = 'ws://192.168.3.100:80/ws';
   private intervalId;
   constructor(wscService: WebsocketService) {
     this.messages = <Subject<Message>>wscService.connect(this.CHAT_URL).pipe(

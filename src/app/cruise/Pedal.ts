@@ -1,4 +1,5 @@
 import { Renderer2 } from '@angular/core';
+import { WebsocketRxjsService } from '../websocket-rxjs.service';
 import { DeviceConfigurationService } from './../device-configuration.service';
 
 export class Pedal {
@@ -38,7 +39,8 @@ export class Pedal {
   constructor(
     private ctx: CanvasRenderingContext2D,
     private renderer2: Renderer2,
-    private deviceConf: DeviceConfigurationService
+    private deviceConf: DeviceConfigurationService,
+    private wscService : WebsocketRxjsService
   ) {
     this.img = new Image();
     this.img.src =
@@ -88,6 +90,7 @@ export class Pedal {
     }
     if (this.ctx.isPointInPath(this.break.path, x, y)) {
       this.break.pressed = true;
+      this.wscService.send("b1");
       if (eventName == 'pointerup') {
         this.break.pointerId = e.pointerId;
       }
@@ -98,12 +101,14 @@ export class Pedal {
         (event) => {
           if (this.break.pointerId == event.pointerId) {
             this.break.pressed = false;
+            this.wscService.send("b0");
             this.unListenMouseUp();
           }
         }
       );
     } else if (this.ctx.isPointInPath(this.gas.path, x, y)) {
       this.gas.pressed = true;
+      this.wscService.send("t1");
       if (eventName == 'pointerup') {
         this.gas.pointerId = e.pointerId;
       }
@@ -113,6 +118,7 @@ export class Pedal {
         (event) => {
           if (this.gas.pointerId == event.pointerId) {
             this.gas.pressed = false;
+            this.wscService.send("t0");
             this.unListenMouseUp();
           }
         }

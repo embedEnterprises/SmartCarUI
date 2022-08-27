@@ -66,7 +66,8 @@ export class CruiseComponent implements OnInit {
       this.ctx,
       this.renderer2,
       this.deviceConf,
-      this.ngZone
+      this.ngZone,
+      this.wscService
     );
     this.dashboard.placeLed();
     this.arr = this.dashboard.ledCases;
@@ -96,10 +97,6 @@ export class CruiseComponent implements OnInit {
         );
       });
     }
-
-
-
-    this.sendData();
     this.animate();
   }
 
@@ -115,41 +112,9 @@ export class CruiseComponent implements OnInit {
     this.requestId = requestAnimationFrame(() => this.animate());
   }
 
-  sendData() {
-    this.prevMessage = {
-      s: 0,
-      t: 0,
-      l: 0,
-      b: 0,
-    };
-    this.ngZone.runOutsideAngular(() => {
-      this.intervalId = setInterval(() => {
-        // if (this.wscService.wsc.readyState == WebSocket.OPEN) {
-        if(this.wscService.isConnected()){
-          this.message = {
-            s: ((this.dashboard.steer.rotation * 180) / Math.PI) | 0,
-            t: this.dashboard.speed | 0,
-            l: this.dashboard.ledCase,
-            b: this.dashboard.pedals.break.pressed == true ? 1 : 0,
-          };
-          this.resultMessage = { ...this.message };
-          for (let key of Object.keys(this.message)) {
-            if (this.message[key] === this.prevMessage[key]) {
-              delete this.resultMessage[key];
-            }
-          }
-          if (Object.keys(this.resultMessage).length != 0) {
-            // this.socket.messages.next(this.resultMessage);
-            this.wscService.send(this.resultMessage);
-          }
-          this.prevMessage = this.message;
-        }
-      }, 50);
-    });
-  }
-
   ledClick(event : any){
     this.dashboard.ledCase = event.path[1].id;
+    this.wscService.send("l" + this.dashboard.ledCase);
   }
 
   ngOnDestroy() {
